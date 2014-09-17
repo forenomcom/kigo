@@ -32,8 +32,8 @@ module Kigo
     request_responses
   end
 
-  def self.access(end_point, request_method, data={}, headers={})
-    request = self.wrap_request(end_point, request_method, data, headers)
+  def self.access(end_point, data={}, headers={})
+    request = self.wrap_request(end_point, :post, data, headers)
     request.on_complete do |response|
       return self.parse_response(response)
     end
@@ -78,13 +78,13 @@ module Kigo
   end
 
   def self.ping
-    self.access('/ping', :post, {})
+    self.access('/ping', {})
   end
 
 
   # Reservations
   def self.diff_property_calendar_reservations(diff_id = nil)
-    self.access('/diffPropertyCalendarReservations', :post, { 'DIFF_ID' => diff_id })
+    self.access('/diffPropertyCalendarReservations', { 'DIFF_ID' => diff_id })
   end
 
   def self.create_confirmed_reservation(params)
@@ -116,25 +116,25 @@ module Kigo
     #     }
     #   ]
     # }
-    self.access('/createConfirmedReservation', :post, params)
+    self.access('/createConfirmedReservation', params)
   end
 
   #Properties
   def self.list_properties
-    self.access('/listProperties', :post)
+    self.access('/listProperties')
   end
 
   def self.read_property(property_id)
-    self.access('/readProperty', :post, { 'PROP_ID' => property_id })
+    self.access('/readProperty', { 'PROP_ID' => property_id })
   end
 
   # Pricing
   def self.read_property_pricing_setup(property_id)
-    self.access('/readPropertyPricingSetup', :post, { 'PROP_ID' => property_id })
+    self.access('/readPropertyPricingSetup', { 'PROP_ID' => property_id })
   end
 
   def self.diff_property_pricing_setup(diff_id = nil)
-    self.access('/diffPropertyPricingSetup', :post, { 'DIFF_ID' => diff_id })
+    self.access('/diffPropertyPricingSetup', { 'DIFF_ID' => diff_id })
   end
 
 #  Example of pricing hash:
@@ -169,7 +169,7 @@ module Kigo
 #    }
 #  }
   def self.update_property_pricing_setup(property_id, pricing)
-    self.access('/updatePropertyPricingSetup', :post, { 'PROP_ID' => property_id, 'PRICING' => pricing })
+    self.access('/updatePropertyPricingSetup', { 'PROP_ID' => property_id, 'PRICING' => pricing })
   end
 
 end
