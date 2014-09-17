@@ -5,15 +5,16 @@ require "typhoeus"
 module Kigo
   APIUrl = 'https://app.kigo.net/api/ra/v1'
 
-  def self.wrap_request(end_point, request_method, data={}, headers={})
-    basic_auth = { username: Kigo.configuration.username, password: Kigo.configuration.password }
-    encoded_auth = "Basic #{Base64.strict_encode64("#{basic_auth[:username]}:#{basic_auth[:password]}")}"
-    data = self.filter_params(data)
-    request_options = { method: request_method, headers: headers.merge(
-        { 'Authorization' => encoded_auth,
-          'Content-Type' => 'application/json' }
-      ) }
-    request_options = request_options.merge(request_method == :post ? { body: data.to_json } : { params: data.to_json })
+  def self.wrap_request(end_point, data={}, headers={})
+    request_options = {
+      verbose: true,
+      method: :post,
+      body: self.filter_params(data).to_json,
+      userpwd: [Kigo.configuration.username, Kigo.configuration.password].join(":"),
+      headers: headers.merge({
+        'Content-Type' => 'application/json'
+      })
+    }
     Typhoeus::Request.new("#{APIUrl}#{end_point}", request_options)
   end
 
@@ -33,7 +34,7 @@ module Kigo
   end
 
   def self.access(end_point, data={}, headers={})
-    request = self.wrap_request(end_point, :post, data, headers)
+    request = self.wrap_request(end_point, data, headers)
     request.on_complete do |response|
       return self.parse_response(response)
     end
