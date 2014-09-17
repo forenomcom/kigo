@@ -122,11 +122,11 @@ module Kigo
 
   #Properties
   def self.list_properties
-    self.access('/listProperties')
+    self.access('/listProperties2')
   end
 
   def self.read_property(property_id)
-    self.access('/readProperty', { 'PROP_ID' => property_id })
+    self.access('/readProperty2', { 'PROP_ID' => property_id })
   end
 
   # Pricing
@@ -172,5 +172,4 @@ module Kigo
   def self.update_property_pricing_setup(property_id, pricing)
     self.access('/updatePropertyPricingSetup', { 'PROP_ID' => property_id, 'PRICING' => pricing })
   end
-
 end
