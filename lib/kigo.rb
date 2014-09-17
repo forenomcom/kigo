@@ -5,9 +5,8 @@ require "typhoeus"
 module Kigo
   APIUrl = 'https://app.kigo.net/api/ra/v1'
 
-  def self.wrap_request(end_point, data={}, headers={})
+  def self.wrap_request(end_point, data = nil, headers={})
     request_options = {
-      verbose: true,
       method: :post,
       body: self.filter_params(data).to_json,
       userpwd: [Kigo.configuration.username, Kigo.configuration.password].join(":"),
@@ -33,7 +32,7 @@ module Kigo
     request_responses
   end
 
-  def self.access(end_point, data={}, headers={})
+  def self.access(end_point, data = nil, headers={})
     request = self.wrap_request(end_point, data, headers)
     request.on_complete do |response|
       return self.parse_response(response)
@@ -56,26 +55,30 @@ module Kigo
     end
   end
 
-  def self.filter_params(hash)
+  def self.filter_params(params)
     filtered_attr = {}
-    hash.each do |param_name, value|
-      if value.is_a? Hash
-        filtered_attr = filtered_attr.merge(param_name => filter_params(value))
-      elsif value.is_a? Array
-        filtered_attr = filtered_attr.merge(param_name => filter_array_params(value))
-      else
-        if value.class == ActionDispatch::Http::UploadedFile
-          filtered_attr = filtered_attr.merge(param_name => value.tempfile)
+    if params.is_a? Hash
+      params.each do |param_name, value|
+        if value.is_a? Hash
+          filtered_attr = filtered_attr.merge(param_name => filter_params(value))
+        elsif value.is_a? Array
+          filtered_attr = filtered_attr.merge(param_name => filter_array_params(value))
         else
-          filtered_attr = filtered_attr.merge(param_name => value)
+          if value.class == ActionDispatch::Http::UploadedFile
+            filtered_attr = filtered_attr.merge(param_name => value.tempfile)
+          else
+            filtered_attr = filtered_attr.merge(param_name => value)
+          end
         end
       end
+      filtered_attr
+    else
+      params
     end
-    return filtered_attr
   end
 
   def self.filter_array_params(array)
-    return array.map { |a| a.is_a?(Hash) ? self.filter_params(a) : a }
+    array.map { |a| a.is_a?(Hash) ? self.filter_params(a) : a }
   end
 
   def self.ping
