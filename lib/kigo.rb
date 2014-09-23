@@ -8,7 +8,7 @@ module Kigo
   def self.wrap_request(end_point, data = nil, headers={})
     request_options = {
       method: :post,
-      body: self.filter_params(data).to_json,
+      body: data.to_json,
       userpwd: [Kigo.configuration.username, Kigo.configuration.password].join(":"),
       headers: headers.merge({
         'Content-Type' => 'application/json'
@@ -55,36 +55,10 @@ module Kigo
     end
   end
 
-  def self.filter_params(params)
-    filtered_attr = {}
-    if params.is_a? Hash
-      params.each do |param_name, value|
-        if value.is_a? Hash
-          filtered_attr = filtered_attr.merge(param_name => filter_params(value))
-        elsif value.is_a? Array
-          filtered_attr = filtered_attr.merge(param_name => filter_array_params(value))
-        else
-          if value.class == ActionDispatch::Http::UploadedFile
-            filtered_attr = filtered_attr.merge(param_name => value.tempfile)
-          else
-            filtered_attr = filtered_attr.merge(param_name => value)
-          end
-        end
-      end
-      filtered_attr
-    else
-      params
-    end
-  end
-
-  def self.filter_array_params(array)
-    array.map { |a| a.is_a?(Hash) ? self.filter_params(a) : a }
-  end
 
   def self.ping
     self.access('/ping', {})
   end
-
 
   # Reservations
   def self.diff_property_calendar_reservations(diff_id = nil)
@@ -128,51 +102,29 @@ module Kigo
     self.access('/listProperties2')
   end
 
-  def self.read_property(property_id)
+  def self.read_property property_id
     self.access('/readProperty2', { 'PROP_ID' => property_id })
   end
 
+  # Owners
+  def self.list_owners
+    self.access '/listOwners'
+  end
+
+  def self.read_owner owner_id
+    self.access '/readOwner', owner_id
+  end
+
   # Pricing
-  def self.read_property_pricing_setup(property_id)
+  def self.read_property_pricing_setup property_id
     self.access('/readPropertyPricingSetup', { 'PROP_ID' => property_id })
   end
 
-  def self.diff_property_pricing_setup(diff_id = nil)
+  def self.diff_property_pricing_setup diff_id = nil
     self.access('/diffPropertyPricingSetup', { 'DIFF_ID' => diff_id })
   end
 
-#  Example of pricing hash:
-#  { "RENT" => {
-#      "PERGUEST_CHARGE" => nil,
-#      "PERIODS" => [
-#        { "CHECK_IN" => "2014-01-01",
-#          "CHECK_OUT" => "2014-03-01",
-#          "NAME" => "Winter 2014",
-#          "STAY_MIN" => { "UNIT" => "NIGHT", "NUMBER" => 3 },
-#          "WEEKLY" => false,
-#          "NIGHTLY_AMOUNTS" => [
-#            { "GUESTS_FROM" => 1,
-#              "WEEK_NIGHTS" => [ 1, 2, 3, 4, 5, 6, 7 ],
-#              "STAY_FROM" => { "UNIT" => "NIGHT", "NUMBER" => 1 },
-#              "AMOUNT" => "100.00"
-#            }
-#          ]
-#        },
-#        { "CHECK_IN" => "2014-03-01",
-#          "CHECK_OUT" => "2014-05-31",
-#          "NAME" => "",
-#          "STAY_MIN" => { "UNIT" => "NIGHT", "NUMBER" => 7 },
-#          "WEEKLY" => true,
-#          "WEEKLY_AMOUNTS" => [
-#            { "GUESTS_FROM" => 1,
-#              "AMOUNT" => "650.00"
-#            }
-#          ]
-#        }
-#      ]
-#    }
-#  }
-  def self.update_property_pricing_setup(property_id, pricing)
+  def self.update_property_pricing_setup property_id, pricing
     self.access('/updatePropertyPricingSetup', { 'PROP_ID' => property_id, 'PRICING' => pricing })
   end
 end
