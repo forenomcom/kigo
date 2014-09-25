@@ -65,6 +65,10 @@ module Kigo
     self.access('/diffPropertyCalendarReservations', { 'DIFF_ID' => diff_id })
   end
 
+  def self.read_reservation reservation_id
+    self.access '/readReservation', { 'RES_ID' => reservation_id }
+  end
+
   def self.create_confirmed_reservation(params)
     # params example:
     # {
@@ -112,7 +116,7 @@ module Kigo
   end
 
   def self.read_owner owner_id
-    self.access '/readOwner', owner_id
+    self.access '/readOwner', { 'OWNER_ID' => owner_id }
   end
 
   # Pricing
