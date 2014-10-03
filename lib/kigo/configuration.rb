@@ -1,20 +1,16 @@
 module Kigo
   class Configuration
-    attr_accessor :username, :password
+    attr_accessor :username, :password, :concurrency, :rate_limit_timeout
+
+    def initialize opts = {}
+      @rate_limit_timeout = 5
+      @concurrency        = 4
+    end
   end
 
   class << self
     attr_accessor :configuration
   end
-
-  # Configure Kigo someplace sensible,
-  # like config/initializers/kigo.rb
-  #
-  # @example
-  #   Kigo.configure do |config|
-  #     config.username = 'your username'
-  #     config.password = 'your password'
-  #   end
 
   def self.configuration
     @configuration ||= Configuration.new
