@@ -9,7 +9,8 @@ module Kigo
     request = self.wrap_request(end_point, data)
     request.on_complete do |response|
       if response.code == 409 # for some reason instead of 429
-        sleep Kigo.configuration.concurrency
+        Rails.logger.info "Kigo hit rate limit, sleeping for #{Kigo.configuration.rate_limit_timeout}"
+        sleep Kigo.configuration.rate_limit_timeout
         hydra.queue(request)
       else
         yield self.parse_response response
